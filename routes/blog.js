@@ -6,9 +6,13 @@ router.get('/', function(request, response) {
     response.redirect('/posts');
 });
 
-router.get('/posts', function(request, response) {
-    
-     response.render('posts-list');
+router.get('/posts', async function(request, response) {
+    const query = `
+        SELECT posts.*, authors.name AS author_name FROM blog.posts
+        INNER JOIN blog.authors ON posts.author_id = authors.id
+    `;
+    const [posts] = await database.query(query);
+    response.render('posts-list', {posts: posts});
 });
 
 router.get('/new-post', async function(request, response) {
