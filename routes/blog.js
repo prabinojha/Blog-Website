@@ -38,7 +38,7 @@ router.get('/posts/:id', async function (request, response) {
         WHERE posts.id = ?
     `;
     // array of posts that will still only hold one post
-    const [posts] = await database.query(query, [request.params.id])
+    const [posts] = await database.query(query, [request.params.id]);
 
     if (!posts || posts.length === 0) {
         return response.status(404).render('404');
@@ -77,6 +77,12 @@ router.post('/posts/:id/update', async function (request, response) {
     const query = 'UPDATE posts SET title = ?, summary = ?, body = ? WHERE posts.id = ?;';
     await database.query(query, [request.body.title, request.body.summary, request.body.content, request.params.id]);
     response.redirect('/posts')
+});
+
+router.post('/posts/:id/delete', async function (request, response) {
+    const query = 'DELETE FROM posts WHERE posts.id = ?';
+    await database.query(query, [request.params.id]);
+    response.redirect('/posts');
 });
 
 module.exports = router;
