@@ -2,25 +2,25 @@ const express = require('express');
 const router = express.Router();
 const database = require('../data/database');
 
-router.get('/', function(request, response) {
+router.get('/', function (request, response) {
     response.redirect('/posts');
 });
 
-router.get('/posts', async function(request, response) {
+router.get('/posts', async function (request, response) {
     const query = `
         SELECT posts.*, authors.name AS author_name FROM blog.posts
         INNER JOIN blog.authors ON posts.author_id = authors.id
     `;
     const [posts] = await database.query(query);
-    response.render('posts-list', {posts: posts});
+    response.render('posts-list', { posts: posts });
 });
 
-router.get('/new-post', async function(request, response) {
+router.get('/new-post', async function (request, response) {
     const [authors] = await database.query('SELECT * FROM blog.authors');
-    response.render('create-post', {authors: authors});
+    response.render('create-post', { authors: authors });
 });
 
-router.post('/posts', async function(request, response) {
+router.post('/posts', async function (request, response) {
     const values = [
         request.body.title,
         request.body.summary,
@@ -31,7 +31,7 @@ router.post('/posts', async function(request, response) {
     response.redirect('/posts'); // redirecting to the GET response for /posts so can get the posts-list
 });
 
-router.get('/posts/:id', async function(request, response) {
+router.get('/posts/:id', async function (request, response) {
     const query = `
         SELECT posts.*, authors.name AS author_name, authors.email AS author_email FROM posts
         INNER JOIN authors ON posts.author_id = authors.id
@@ -55,10 +55,10 @@ router.get('/posts/:id', async function(request, response) {
         })
     };
 
-    response.render('post-detail', {post: postData});
+    response.render('post-detail', { post: postData });
 });
 
-router.get('/posts/:id/edit', async function(request, response) {
+router.get('/posts/:id/edit', async function (request, response) {
 
     const query = `
         SELECT * FROM posts WHERE id = ?
@@ -70,7 +70,13 @@ router.get('/posts/:id/edit', async function(request, response) {
         return response.status(404).render('404');
     }
 
-    response.render('update-post', {post: posts[0]});
-})
+    response.render('update-post', { post: posts[0] });
+});
+
+router.post('/posts/:id/update', async function (request, response) {
+    const query = 'UPDATE posts SET title = ?, summary = ?, body = ? WHERE posts.id = ?;';
+    await database.query(query, [request.body.title, request.body.summary, request.body.content, request.params.id]);
+    response.redirect('/posts')
+});
 
 module.exports = router;
